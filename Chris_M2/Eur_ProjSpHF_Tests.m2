@@ -6,111 +6,41 @@ load "Eur_ProjSpHF.m2"
 --over Krasner
 n = 3
 ML = allMatroidsNoSym(n);
-ML/(i -> #i)
+--ML = allMatroidsNoSym(n, makeHyperfield "Sign");
+--ML = allMatroidsNoSym(n, makeHyperfield GF(3));
+rks = ML/(i -> #i)
+--ML = ML/(i -> select(i, m -> #(components m) == 1))
 time PS = poset(flatten ML, isQuot) -- 8 secs when n = 5
 
 Lef = r -> (
     matrix apply(ML_(r+1), i -> apply(ML_r, j -> if isQuot(j,i) then 1/1 else 0))
     )
 
-time L = apply(n, i -> Lef i) | {matrix{{0}}}
+time L = apply(n, i -> Lef i) | {matrix{{0/1}}}
 L/rank
 --Lam = {matrix{{0}}} | (drop(L,-1)/transpose)
-Lam = reverse L
-Hcand = apply(n+1, k -> (2*k - n) * id_(QQ^(#ML_k)))
+H = apply(n+1, k -> (2*k - n) * id_(QQ^(#ML_k)))
 
---making the global Lefschetz operator
-globalLef = method()
---given a list L of matrices, representing the "raising operators" for each degree,
---outputs a matrix representing the operator on the whole space
-globalLef(List) := Matrix => L -> (
-    --not yet implemented
-    )
-zeroMat = (m,n) -> matrix apply(m, i -> apply(n, j -> 0/1))
+GL = globalOperator(L,1)
+mapsByDeg(GL,rks,1) == L
 
-a = symbol a;
-b = symbol b;
-R = QQ[flatten apply(7, i -> apply(7, j -> a_(i,j))) | flatten apply(7, i -> apply(7, j -> b_(i,j)))]
-R_49
-H1 = transpose genericMatrix(R,7,7)
-H2 = transpose genericMatrix(R,R_49,7,7)	
-(H1 * (transpose matrix{{1,1,1,1,1,1,1}}) + (transpose matrix{{1,1,1,1,1,1,1}}))
-eq1 = flatten entries oo
-(matrix {{1,1,1,1,1,1,1}} * H2) - matrix{{1,1,1,1,1,1,1}}
-eq2 = flatten entries oo
-H2 * L_1 - L_1 * H1 - 2* L_1
-eq3 = flatten entries oo
-I = ideal(eq1 | eq2 | eq3)
-I = ideal mingens I
-J = I + ideal apply(gens ring prune I, i -> sub(i,R))
-J = ideal mingens J
-J_*
+GH = globalOperator(H,0)
+mapsByDeg(GH,rks,0) == H
 
---finding H matrix assuming symmetric
-a = symbol a;
-b = symbol b;
-R = QQ[ apply(28, i -> a_i) | apply(28, i -> b_i)]
-R_28
-H1 = transpose genericSymmetricMatrix(R,7)
-H2 = transpose genericSymmetricMatrix(R,R_28,7)	
-(H1 * (transpose matrix{{1,1,1,1,1,1,1}}) + (transpose matrix{{1,1,1,1,1,1,1}}))
-eq1 = flatten entries oo
-(matrix {{1,1,1,1,1,1,1}} * H2) - matrix{{1,1,1,1,1,1,1}}
-eq2 = flatten entries oo
-H2 * L_1 - L_1 * H1 - 2* L_1
-eq3 = flatten entries oo
-I = ideal(eq1 | eq2 | eq3)
-I = ideal mingens I
-J = I + ideal apply(gens ring prune I, i -> sub(i,R))
-J = ideal mingens J
-subs = apply(J_*, f -> (
-	if #terms f == 1 then first terms f => 0
-	else if #terms f == 2 then first terms f => last terms f
-	else error "not one or two terms"
-	)
-    )
-sub(H1,subs)
-sub(H2,subs)
+bracket(GH,GL) == 2*GL
 
-H = {matrix{{-1}}, sub(H1,subs), sub(H2,subs), matrix{{1}}}
+GLam = findLambda(GH,GL)
 
---Lie bracket if A is raising and B is lowering
-bracketRL = (A,B,i) -> (
-    if i == 0 then - B_(i+1) * A_i
-    else if i == n then A_(i-1) * B_i
-    else A_(i-1) * B_i - B_(i+1) * A_i
-    )
+bracket(GH,GLam) == -2* GLam
+bracket(GL,GLam) == GH
 
---Lie bracket if A neither raises nor lowers, and B lowers
-bracketNL = (A,B,i) -> (
-    if i == 0 then - B_i * A_i
-    else A_(i-1) * B_i - B_i * A_i
-    )
+Lam = mapsByDeg(GLam,rks,-1)
 
---Lie bracket if A neither raises nor lowers, and B raises
-bracketNR = (A,B,i) -> (
-    if i == n then - B_i * A_i
-    else A_(i+1) * B_i - B_(i) * A_i
-    )
-
-apply(n+1, i -> bracketNR(H,L,i))
-L
-
-
-
---this naive one didn't work but for record
-H = apply(n+1, i -> bracketRL(L,Lam,i))
-apply(n+1, i -> bracketNR(H,L,i))
-L
-apply(n+1, i -> bracketNL(H,Lam,i))
-Lam
-
-apply(n+1, i -> bracketNR(Hcand,L,i))
-L
-apply(n+1, i -> bracketNL(Hcand,Lam,i))
-Lam
-
-
+netList reverse Lam
+netList reverse {0, Lam_1*(22/3), Lam_2*110, Lam_3*(22/3)} --for Krasner
+netList reverse {0, Lam_1*(7/3), Lam_2*42, Lam_3*(7/3)} --for GF(2)
+netList reverse {0, Lam_1*(10), Lam_2*90, Lam_3*(10)} --for Sign
+netList reverse {0, Lam_1*(13/3), Lam_2*39, Lam_3*(13/3)} --for GF(3)
 
 
 

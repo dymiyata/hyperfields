@@ -324,6 +324,108 @@ isQuot(FMatroid,FMatroid) := (FM,FN) -> (
     )
 
 
+---------------------------< Lie bracket related functions >-----------------------------
+
+--Lie bracket if A is raising and B is lowering
+bracketRL = (A,B,i) -> (
+    if i == 0 then - B_(i+1) * A_i
+    else if i == n then A_(i-1) * B_i
+    else A_(i-1) * B_i - B_(i+1) * A_i
+    )
+
+--Lie bracket if A neither raises nor lowers, and B lowers
+bracketNL = (A,B,i) -> (
+    if i == 0 then - B_i * A_i
+    else A_(i-1) * B_i - B_i * A_i
+    )
+
+--Lie bracket if A neither raises nor lowers, and B raises
+bracketNR = (A,B,i) -> (
+    if i == n then - B_i * A_i
+    else A_(i+1) * B_i - B_(i) * A_i
+    )
+
+
+--making the global Lefschetz operator
+globalOperator = method()
+
+--auxiliary function: matrices filled with 0 (in QQ)
+zeroMat = (m,n) -> matrix apply(m, i -> apply(n, j -> 0/1))
+
+--given a list L of matrices, representing the linear maps that change degree by
+--an integer d = -1, 0, or 1, outputs a matrix representing the operator on the whole space
+globalOperator(List,ZZ) := Matrix => (L,d) -> (
+    rks := L/numcols;
+    n := #L;
+    matrix apply(n, i -> apply(n, j -> (
+		if i-j == d then L_j
+		else zeroMat(rks_i,rks_j)
+		)
+	    )
+	)
+    )
+
+--reverses the globalOperator function from square matrix G,
+--given the ranks list rks and degree d = -1, 0, or 1
+mapsByDeg = method()
+mapsByDeg(Matrix,List,ZZ) := List => (G,rks,d) -> (
+    sumrks := apply(#rks, i -> sum(i, j -> rks_j));
+    if d == 0 then apply(#rks, i -> (
+	    rows := apply(rks_i, j -> j + sumrks_i);
+	    cols := apply(rks_i, j -> j + sumrks_i);
+	    G_cols^rows
+	    )
+	)
+    else if d == 1 then apply(#rks-1, i -> (
+	    rows := apply(rks_(i+1), j -> j + sumrks_(i+1));
+	    cols := apply(rks_i, j -> j + sumrks_i);
+	    G_cols^rows
+	    )
+	) | {zeroMat(1, last rks)}
+    else if d == -1 then {zeroMat(1,first rks)} | apply(#rks-1, i -> (
+	    rows := apply(rks_i, j -> j + sumrks_i);
+	    cols := apply(rks_(i+1), j -> j + sumrks_(i+1));
+	    G_cols^rows
+	    )
+	)
+    )
+
+--bracket [A,B] = AB - BA
+bracket = (A,B) -> A*B - B*A
+
+findLambda = method()
+--computes the global Lambda operator from GH, the global H, and GL, the global raising operator
+findLambda(Matrix,Matrix) := Matrix => (GH,GL) -> (
+    if bracket(GH,GL) != 2*GL then error "inputs (GH,GL) don't satisfy [GH,GL] = 2GL";
+    x := symbol x;
+    R := QQ[flatten apply(numcols GH, i -> apply(numcols GH, j -> x_(i,j)))];
+    GLamX := transpose genericMatrix(R,numcols GH, numcols GH);
+    GLamX = sub(GLamX, apply(gens R, i -> (
+	    	pair := last baseName i;
+	    	if pair_0 >= pair_1 then i => 0
+	    	else i => i
+	    	)
+	    )
+	);
+    I1 := ideal flatten entries (bracket(GL,GLamX) - GH);
+    I2 := ideal flatten entries (bracket(GH,GLamX) + 2*GLamX);
+    I := ideal mingens (I1+I2);
+    J := I; --+ ideal apply(gens ring prune I, i -> sub(i,R));
+    J = ideal mingens J;
+    --all(J_*, i -> member(#(terms i), {1,2}))
+    subs := apply(J_*, f -> (
+	    Tf := terms f;
+	    if #Tf == 1 then leadMonomial f => 0
+	    else if #Tf == 2 then leadMonomial f => -(last Tf)/(coefficient(leadMonomial f, f))
+	    else error "not one or two terms"
+	    )
+    	);
+    sub(sub(GLamX, subs),QQ)
+    )
+    
+
+
+
 
 ---------------------------< flag variety related functions >-----------------------------
 
