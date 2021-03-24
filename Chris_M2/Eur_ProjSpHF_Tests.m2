@@ -29,7 +29,7 @@ mapsByDeg(GH,rks,0) == H
 
 bracket(GH,GL) == 2*GL
 
-GLam = findLambda(GH,GL)
+time GLam = findLambda(GH,GL) -- 35 secs when n = 4 and over Krasner
 
 bracket(GH,GLam) == -2* GLam
 bracket(GL,GLam) == GH
