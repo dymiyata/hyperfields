@@ -1,9 +1,40 @@
 
-------------------< checking the lefschetz operator conjecture >---------------------
+----------------------< Poincare pairing computations >--------------------------
+restart
+load "Eur_ProjSpHF.m2"
+
+n = 4;
+ML = allMatroidsNoSym 4;
+rks = ML/(i -> #i)
+
+pair1 = matrix apply(ML_2, i -> apply(ML_2, j -> if rank(i+j) == n then 1/1 else 0))
+pair2 = matrix apply(ML_2, i -> apply(ML_2, j -> (
+	    Bi := bases i;
+	    Bj := bases j;
+	    #select((Bi ** Bj)/product, s -> s === set {})
+	    )
+	)
+    )
+pair3 = matrix apply(ML_2, i -> apply(ML_2, j -> (
+	    Fi := delete(i.groundSet, flats i);
+	    Fj := delete(j.groundSet, flats j);
+	    joined := Fi | Fj;
+	    if #(unique joined) == #joined then 1 else 0
+	    )
+	)
+    )
+rank pair3
+signCount toList eigenvalues pair3
+signCount toList eigenvalues pair1
+signCount toList eigenvalues pair2
 
 
-
-
+signCount = L -> tally apply(L, i -> (
+	if abs(i) < 10^(-10) then "0"
+	else if i < 0 then "-"
+	else "+"
+	)
+    )
 
 
 ------------------< checking the lefschetz operator conjecture >---------------------
@@ -14,7 +45,7 @@ load "Eur_ProjSpHF.m2"
 n = 3
 ML = allMatroidsNoSym(n);
 --ML = allMatroidsNoSym(n, makeHyperfield "Sign");
---ML = allMatroidsNoSym(n, makeHyperfield GF(3));
+--ML = allMatroidsNoSym(n, makeHyperfield GF(2));
 rks = ML/(i -> #i)
 --ML = ML/(i -> select(i, m -> #(components m) == 1))
 time PS = poset(flatten ML, isQuot) -- 8 secs when n = 5
