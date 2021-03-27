@@ -1,5 +1,12 @@
 
 ------------------< checking the lefschetz operator conjecture >---------------------
+
+
+
+
+
+
+------------------< checking the lefschetz operator conjecture >---------------------
 restart
 load "Eur_ProjSpHF.m2"
 
