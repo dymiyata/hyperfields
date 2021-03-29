@@ -11,7 +11,7 @@ pair1 = matrix apply(ML_2, i -> apply(ML_2, j -> if rank(i+j) == n then 1/1 else
 pair2 = matrix apply(ML_2, i -> apply(ML_2, j -> (
 	    Bi := bases i;
 	    Bj := bases j;
-	    #select((Bi ** Bj)/product, s -> s === set {})
+	    (#select((Bi ** Bj)/product, s -> s === set {}))/1
 	    )
 	)
     )
@@ -19,14 +19,19 @@ pair3 = matrix apply(ML_2, i -> apply(ML_2, j -> (
 	    Fi := delete(i.groundSet, flats i);
 	    Fj := delete(j.groundSet, flats j);
 	    joined := Fi | Fj;
-	    if #(unique joined) == #joined then 1 else 0
+	    if #(unique joined) == #joined then 1/1 else 0
 	    )
 	)
     )
+
 rank pair3
+sort toList eigenvalues pair3
+sort toList eigenvalues pair1
 signCount toList eigenvalues pair3
 signCount toList eigenvalues pair1
 signCount toList eigenvalues pair2
+
+gens ker pair1 == gens ker pair3
 
 
 signCount = L -> tally apply(L, i -> (
