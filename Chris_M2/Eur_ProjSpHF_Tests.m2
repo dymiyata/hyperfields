@@ -23,16 +23,30 @@ pair3 = matrix apply(ML_2, i -> apply(ML_2, j -> (
 	    )
 	)
     )
+pair4 = matrix apply(ML_2, i -> apply(ML_2, j -> (
+	    Fi := flats i;
+	    Fj := flats j;
+	    if #(unique ((Fi ** Fj)/product)) == 2^n then 1/1 else 0
+	    )
+	)
+    )
+
+boxSum = (S,T) -> (
+    symDiff := (S + T) - (S * T);
+    apply(subsets (S*T), i -> i + symDiff)
+    )
+
+pair5 = matrix apply(ML_2, i -> apply(ML_2, j -> (
+	    E := i.groundSet;
+	    Fi := (flats i)/(f -> E - f);
+	    Fj := (flats j)/(f -> E - f);
+	    if #(unique flatten ((Fi ** Fj)/(k -> boxSum toSequence k))) == 2^n then 1/1 else 0
+	    --if #(unique ((Fi ** Fj)/product)) == 2^n then 1/1 else 0
+	    )
+	)
+    )
 
 rank pair3
-sort toList eigenvalues pair3
-sort toList eigenvalues pair1
-signCount toList eigenvalues pair3
-signCount toList eigenvalues pair1
-signCount toList eigenvalues pair2
-
-gens ker pair1 == gens ker pair3
-
 
 signCount = L -> tally apply(L, i -> (
 	if abs(i) < 10^(-10) then "0"
@@ -41,6 +55,17 @@ signCount = L -> tally apply(L, i -> (
 	)
     )
 
+sort toList eigenvalues pair3
+sort toList eigenvalues pair1
+signCount toList eigenvalues pair3
+signCount toList eigenvalues pair1
+signCount toList eigenvalues pair2
+
+gens ker pair1 == gens ker pair3
+
+signCount toList eigenvalues pair5
+
+gens ker pair1, gens ker pair3, gens ker pair5
 
 ------------------< checking the lefschetz operator conjecture >---------------------
 restart
@@ -50,7 +75,7 @@ load "Eur_ProjSpHF.m2"
 n = 3
 ML = allMatroidsNoSym(n);
 --ML = allMatroidsNoSym(n, makeHyperfield "Sign");
---ML = allMatroidsNoSym(n, makeHyperfield GF(2));
+--ML = allMatroidsNoSym(n, makeHyperfield GF(3));
 rks = ML/(i -> #i)
 --ML = ML/(i -> select(i, m -> #(components m) == 1))
 time PS = poset(flatten ML, isQuot) -- 8 secs when n = 5
