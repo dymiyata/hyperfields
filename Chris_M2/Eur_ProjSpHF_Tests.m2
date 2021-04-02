@@ -4,10 +4,17 @@ restart
 load "Eur_ProjSpHF.m2"
 
 n = 4;
-ML = allMatroidsNoSym 4;
+ML = allMatroidsNoSym n;
 rks = ML/(i -> #i)
 
-pair1 = matrix apply(ML_2, i -> apply(ML_2, j -> if rank(i+j) == n then 1/1 else 0))
+r=2
+pair1 = matrix apply(ML_r, i -> apply(ML_(n-r), j -> (
+	    Bi := bases i;
+	    Bj := bases j;
+	    if any((Bi ** Bj)/product, s -> s === set {}) then 1/1 else 0)
+	)
+    )
+
 pair2 = matrix apply(ML_2, i -> apply(ML_2, j -> (
 	    Bi := bases i;
 	    Bj := bases j;
@@ -15,7 +22,7 @@ pair2 = matrix apply(ML_2, i -> apply(ML_2, j -> (
 	    )
 	)
     )
-pair3 = matrix apply(ML_2, i -> apply(ML_2, j -> (
+pair3 = matrix apply(ML_r, i -> apply(ML_(n-r), j -> (
 	    Fi := delete(i.groundSet, flats i);
 	    Fj := delete(j.groundSet, flats j);
 	    joined := Fi | Fj;
