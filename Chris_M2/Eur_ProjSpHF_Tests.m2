@@ -1,3 +1,52 @@
+---------------< valuative relations become primitive elements? >-------------------
+restart
+load "Eur_ProjSpHF.m2"
+
+--n = 4 case
+n = 4
+ML = allMatroidsNoSym(n);
+rks = ML/(i -> #i)
+
+Lef = r -> (
+    matrix apply(ML_(r+1), i -> apply(ML_r, j -> if isQuot(j,i) then 1/1 else 0))
+    )
+
+time L = apply(n, i -> Lef i) | {matrix{{0/1}}};
+L/rank
+
+ker L_2 --can see the three valuative relations
+
+
+--n = 5 case
+n = 5
+ML = allMatroidsNoSym(n);
+rks = ML/(i -> #i)
+
+Lef = r -> (
+    matrix apply(ML_(r+1), i -> apply(ML_r, j -> if isQuot(j,i) then 1/1 else 0))
+    )
+
+time L = apply(n, i -> Lef i) | {matrix{{0/1}}};
+L/rank
+
+Lsq = L_3*L_2
+--ker Lsq
+flatten entries (gens ker Lsq)_0, i -> i != 0 
+positions(flatten entries (gens ker Lsq)_0, i -> i != 0 )
+rel = (ML_2)_oo
+netList (rel/nonbases)
+
+positions(ML_2, m -> rank(m,set{0}) == 0 and #(bases m) == 6 )
+bases (ML_2)_26
+bases (ML_2)_81
+bases (ML_2)_51
+bases (ML_2)_56
+I = id_(QQ^171);
+v = I_26 + I_81 - I_51 - I_56
+Lsq * v
+
+
+
 
 ----------------------< Poincare pairing computations >--------------------------
 restart
@@ -85,7 +134,7 @@ ML = allMatroidsNoSym(n);
 --ML = allMatroidsNoSym(n, makeHyperfield GF(3));
 rks = ML/(i -> #i)
 --ML = ML/(i -> select(i, m -> #(components m) == 1))
-time PS = poset(flatten ML, isQuot) -- 8 secs when n = 5
+time PS = poset(flatten ML, isQuot); -- 8 secs when n = 5
 
 Lef = r -> (
     matrix apply(ML_(r+1), i -> apply(ML_r, j -> if isQuot(j,i) then 1/1 else 0))
@@ -118,7 +167,16 @@ netList reverse {0, Lam_1*(10), Lam_2*90, Lam_3*(10)} --for Sign
 netList reverse {0, Lam_1*(13/3), Lam_2*39, Lam_3*(13/3)} --for GF(3)
 
 
-
+--valuative relations become primitive elements?
+Lsq = L_3*L_2
+positions(ML_2, m -> rank(m,set{0}) == 0 and #(bases m) == 6 )
+bases (ML_2)_26
+bases (ML_2)_81
+bases (ML_2)_51
+bases (ML_2)_56
+I = id_(QQ^171);
+v = I_26 + I_81 - I_51 - I_56
+Lsq * v
 
 n = 3
 ML = allMatroidsNoSym(n, makeHyperfield GF(2));
