@@ -1,3 +1,76 @@
+------------------------------< regular matroids >-------------------------------
+restart
+load "Eur_ProjSpHF.m2"
+
+F2 = makeHyperfield GF(2)
+F3 = makeHyperfield GF(3)
+
+to2 = m -> (
+    mat := m.matroid;
+    H := hashTable apply(keys m.Fbases, i -> (i, if (m.Fbases)#i == 0 then 0 else 1));
+    makeFMatroid(mat,F2,H)
+    )
+
+--sanity checks
+--ML = allMatroidsNoSym(4,makeHyperfield(GF(3)))
+--ML_2/to2/isWellDefined
+
+regularMatroids = n -> (
+    ML := allMatroidsNoSym(n, F3);
+    apply(ML, l -> select(l, m -> isWellDefined to2 m))
+    )
+
+isRegQuot = (m,n,L) -> (
+    isQuot(m,n,L) and isQuot(to2 m, to2 n, L)
+    )
+
+n = 3
+ML = allMatroidsNoSym(n, F3);
+ML/(l -> #l)
+time RML = regularMatroids n;
+rks = RML/(l -> #l)
+
+Lef = r -> (
+    L := singleIncidences(r,r+1,n);
+    matrix apply(RML_(r+1), i -> apply(RML_r, j -> if isRegQuot(j,i,L) then 1/1 else 0))
+    )
+
+time L = apply(n, i -> Lef i) | {matrix{{0/1}}}
+L/rank
+--fake Lambda
+Lam = {matrix{{0}}} | (drop(L,-1)/transpose)
+H = apply(n+1, k -> (2*k - n) * id_(QQ^(#ML_k)))
+
+LbracketLam = i -> (
+    if i == 0 then - Lam_(i+1) * L_i
+    else if i == n then L_(i-1) * Lam_i
+    else L_(i-1) * Lam_i - Lam_(i+1) * L_i
+    )
+
+LbracketLam 0
+LbracketLam 1
+LbracketLam 2
+LbracketLam 3
+
+--real Lambda
+GL = globalOperator(L,1)
+mapsByDeg(GL,rks,1) == L
+
+GH = globalOperator(H,0)
+mapsByDeg(GH,rks,0) == H
+
+bracket(GH,GL) == 2*GL
+
+time GLam = findLambda(GH,GL)
+
+bracket(GH,GLam) == -2* GLam
+bracket(GL,GLam) == GH
+
+Lam = mapsByDeg(GLam,rks,-1)
+
+netList reverse Lam
+
+
 ---------------< valuative relations become primitive elements? >-------------------
 restart
 load "Eur_ProjSpHF.m2"

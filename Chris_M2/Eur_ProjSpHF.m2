@@ -323,6 +323,30 @@ isQuot(FMatroid,FMatroid) := (FM,FN) -> (
     all(L, f -> isNull(f,F,H))
     )
 
+isQuot(FMatroid,FMatroid,List) := (FM,FN,L) -> (
+    F := FM.field;
+    if F =!= FN.field then error "underlying hyperfields are different";
+    M := FM.matroid;
+    N := FN.matroid;
+    r := rank M;
+    s := rank N;
+    if r == s then return FM === FN;
+    if not isQuot(M,N) then return false;
+    n := #(elements M.groundSet);
+    if L == {} then return true;
+    R := ring first L;
+    BM := bases M;
+    BN := bases N;
+    H := hashTable apply(gens R, i -> (
+	    S := set last baseName i;
+	    if member(S, BM) then (i,FM.Fbases#(sort elements S))
+	    else if member(S,BN) then (i, FN.Fbases#(sort elements S))
+	    else (i,F.zero)
+	    )
+	);
+    all(L, f -> isNull(f,F,H))
+    )
+
 
 ---------------------------< Lie bracket related functions >-----------------------------
 
