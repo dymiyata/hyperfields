@@ -1,3 +1,85 @@
+------------------------------< principal truncations >-------------------------------
+restart
+load "Eur_ProjSpHF.m2"
+
+--n = 6 case
+n = 6
+ML = allMatroidsNoSym(n);
+rks = ML/(i -> #i)
+
+princLef = r -> (
+    princs := hashTable apply(ML_r, m -> (m, select(apply(ML_1, u -> u + m), i -> rank i == r+1)));
+    sub(matrix apply(ML_(r+1), i -> apply(ML_r, j -> #select(princs#j, k -> k == i))),QQ)
+    )
+
+time PL = apply(n, i -> princLef i) | {matrix{{0/1}}}; --1500 seconds!
+PL;
+PL/rank --not full rank!
+rank (PL_3*PL_2)
+rank (PL_3*PL_2*PL_1)
+rank (PL_4*PL_3*PL_2*PL_1*PL_0)
+rks
+
+--fl = openOutAppend "princLef_nEquals6"
+--fl << toExternalString PL << close
+
+fl = openIn "princLef_nEquals6"
+PLL  = value get fl;
+PLL/rank
+
+
+--n = 4 case
+n = 5
+ML = allMatroidsNoSym(n);
+rks = ML/(i -> #i)
+
+princLef = r -> (
+    princs := hashTable apply(ML_r, m -> (m, select(apply(ML_1, u -> u + m), i -> rank i == r+1)));
+    sub(matrix apply(ML_(r+1), i -> apply(ML_r, j -> #select(princs#j, k -> k == i))),QQ)
+    )
+
+princLef2 = r -> (
+    princs := hashTable apply(ML_r, m -> (m, select(apply(ML_1, u -> u + m), i -> rank i == r+1)));
+    matrix apply(ML_(r+1), i -> apply(ML_r, j -> if #select(princs#j, k -> k == i) > 0 then 1/1 else 0))
+    )
+
+time PL = apply(n, i -> princLef2 i) | {matrix{{0/1}}};
+PL/rank
+
+--fake Lambda
+Lam = {matrix{{0}}} | (drop(PL,-1)/transpose)
+
+LbracketLam = i -> (
+    if i == 0 then - Lam_(i+1) * PL_i
+    else if i == n then PL_(i-1) * Lam_i
+    else PL_(i-1) * Lam_i - Lam_(i+1) * PL_i
+    )
+
+LbracketLam 0
+LbracketLam 1
+LbracketLam 2
+LbracketLam 3
+
+--real Lambda
+H = apply(n+1, k -> (2*k - n) * id_(QQ^(#ML_k)))
+GL = globalOperator(PL,1)
+mapsByDeg(GL,rks,1) == PL
+
+GH = globalOperator(H,0)
+mapsByDeg(GH,rks,0) == H
+
+bracket(GH,GL) == 2*GL
+
+time GLam = findLambda(GH,GL)
+
+bracket(GH,GLam) == -2* GLam
+bracket(GL,GLam) == GH
+
+Lam = mapsByDeg(GLam,rks,-1)
+
+netList reverse Lam
+
+
 ------------------------------< regular matroids >-------------------------------
 restart
 load "Eur_ProjSpHF.m2"

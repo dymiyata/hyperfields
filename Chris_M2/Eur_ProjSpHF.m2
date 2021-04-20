@@ -174,6 +174,11 @@ allMatroidsNoSym(ZZ) := List => n -> (
 isQuot = method()
 isQuot(Matroid,Matroid) := Boolean => (m,n) -> isSubset(flats m, flats n)
 
+
+
+
+
+
 -------------------------------------< F-matroids >--------------------------------------
 
 FMatroid = new Type of HashTable
