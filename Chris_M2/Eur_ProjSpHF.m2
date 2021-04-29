@@ -230,6 +230,8 @@ dual(FMatroid) := FMatroid => {} >> opts -> FM -> (
 
 bases(FMatroid) := HashTable => FM -> FM.Fbases
 
+rank(FMatroid) := ZZ => FM -> rank FM.matroid
+
 --input: an FMatroid FM and a list L of polynomials whose variables are indexed by subsets(n,r)
 --outputs: checks whether Fbases satisfies the isNull condition imposed by polynomials in L
 --Note: when underlying matroid of FM is well-defined and F is perfect hyperfield, can use
@@ -519,7 +521,7 @@ singleExchanges(List,ZZ) := List => (ranks,n) -> (
 
 singleIncidences = method();
 singleIncidences(ZZ,ZZ,ZZ) := List => (r,s,n) -> (
-    if r == 0 or s == n then return {};
+    if r == 0 or r == s or s == n then return {};
     full := singleExchanges({r,s},n);
     R := ring first full;
     select(full, f -> (

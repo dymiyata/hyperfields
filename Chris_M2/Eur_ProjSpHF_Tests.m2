@@ -1,3 +1,13 @@
+restart
+load "Eur_ProjSpHF.m2"
+
+n = 3
+ML = allMatroidsNoSym(n);
+rks = ML/(i -> #i)
+time P = poset(flatten ML, isQuot);
+displayPoset P
+isLattice P
+
 ------------------------------< principal truncations >-------------------------------
 restart
 load "Eur_ProjSpHF.m2"
@@ -106,11 +116,16 @@ isRegQuot = (m,n,L) -> (
     isQuot(m,n,L) and isQuot(to2 m, to2 n, L)
     )
 
-n = 3
+
+n = 4
 ML = allMatroidsNoSym(n, F3);
 ML/(l -> #l)
 time RML = regularMatroids n;
 rks = RML/(l -> #l)
+time P = poset(flatten RML, (a,b) -> isRegQuot(a,b,singleIncidences(rank a, rank b, n)));
+--displayPoset P
+isLattice P
+
 
 Lef = r -> (
     L := singleIncidences(r,r+1,n);
@@ -284,12 +299,13 @@ load "Eur_ProjSpHF.m2"
 
 --over Krasner
 n = 3
-ML = allMatroidsNoSym(n);
---ML = allMatroidsNoSym(n, makeHyperfield "Sign");
+--ML = allMatroidsNoSym(n);
+ML = allMatroidsNoSym(n, makeHyperfield "Sign");
 --ML = allMatroidsNoSym(n, makeHyperfield GF(3));
 rks = ML/(i -> #i)
 --ML = ML/(i -> select(i, m -> #(components m) == 1))
 time PS = poset(flatten ML, isQuot); -- 8 secs when n = 5
+isLattice PS
 
 Lef = r -> (
     matrix apply(ML_(r+1), i -> apply(ML_r, j -> if isQuot(j,i) then 1/1 else 0))
