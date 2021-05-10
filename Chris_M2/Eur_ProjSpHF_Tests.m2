@@ -1,12 +1,19 @@
+
+----------------------------------< shellability >------------------------------------
 restart
 load "Eur_ProjSpHF.m2"
+needsPackage "SimplicialDecomposability"
 
 n = 3
+--ML = allMatroidsNoSym(n,makeHyperfield("Sign"));
 ML = allMatroidsNoSym(n);
 rks = ML/(i -> #i)
 time P = poset(flatten ML, isQuot);
-displayPoset P
-isLattice P
+OC = orderComplex P;
+--time isShellable OC --VERY SLOW
+betti res dual monomialIdeal OC
+
+
 
 ------------------------------< principal truncations >-------------------------------
 restart
