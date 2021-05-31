@@ -1,4 +1,55 @@
 
+----------------------------------< matroid homology >------------------------------------
+restart
+load "Eur_ProjSpHF.m2"
+
+n = 3
+ML = allMatroidsNoSym(n);
+rks = ML/(i -> #i)
+
+M = uniformMatroid(2,3)
+
+--given a matroid m and an index i, contracts by i and adds it back as a loop
+myContract = (m,i) -> (
+    B := (select(bases m, b -> member(i,b)))/elements/(b -> delete(i,b));
+    matroid(elements m.groundSet, B)
+    )
+
+--given a matroid m
+delC = (m,ml) -> (
+    r := rank m;
+    nonL := sort elements (m.groundSet - set loops m);
+    hashTable (plus, apply(#nonL, i -> (
+	    mc := myContract(m,nonL_i);
+	    (position(ml_(r-1), j -> j == myContract(m,nonL_i)),(-1/1)^i)
+	    )
+	))
+    )
+
+matroidComplex = method()
+matroidComplex(ZZ) := n -> (
+    ML := allMatroidsNoSym(n);
+    rks := ML/(i -> #i);
+    E := elements ((first first ML).groundSet);
+    mats := apply(n, k -> transpose matrix apply(rks_(k+1), i -> (
+		M := (ML_(k+1))_i;
+		DC := delC(M,ML);
+		apply(rks_k, j -> (
+			if member(j,keys DC) then DC#j
+			else 0
+			)
+		    )
+		)
+	    )
+	);
+    chainComplex mats
+    )
+
+C = matroidComplex 3
+C.dd^2
+
+
+
 ----------------------------------< shellability >------------------------------------
 restart
 load "Eur_ProjSpHF.m2"
@@ -305,10 +356,10 @@ restart
 load "Eur_ProjSpHF.m2"
 
 --over Krasner
-n = 3
---ML = allMatroidsNoSym(n);
+n = 4
+ML = allMatroidsNoSym(n);
 ML = allMatroidsNoSym(n, makeHyperfield "Sign");
---ML = allMatroidsNoSym(n, makeHyperfield GF(3));
+ML = allMatroidsNoSym(n, makeHyperfield GF(2));
 rks = ML/(i -> #i)
 --ML = ML/(i -> select(i, m -> #(components m) == 1))
 time PS = poset(flatten ML, isQuot); -- 8 secs when n = 5
@@ -319,7 +370,8 @@ Lef = r -> (
     )
 
 time L = apply(n, i -> Lef i) | {matrix{{0/1}}}
-L/rank
+L/(l -> (transpose l) * l)
+oo_1
 --Lam = {matrix{{0}}} | (drop(L,-1)/transpose)
 H = apply(n+1, k -> (2*k - n) * id_(QQ^(#ML_k)))
 
