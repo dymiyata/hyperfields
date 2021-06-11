@@ -540,19 +540,14 @@ allExchanges(List,ZZ) := Ideal => (ranks,n) -> (
     
 )
 
+------------------------------------------------------------------------------------------------
+signCount = L -> tally apply(L, i -> (
+	if abs(i) < 10^(-10) then "0"
+	else if i < 0 then "-"
+	else "+"
+	)
+    )
 
---given a list M = {M_1, .. , M_k} of matroids on [n] such that M_i quotient of M_(i+1),
---outputs the single-exchange Plucker relations for the flag Dressian
---needs the package "Matroids"
-dressianEqns = method();
-dressianEqns(List) := Ideal => M -> (
-    ranks := M/rank;
-    n := #(first M).groundSet;
-    I := ideal singleExchanges(ranks,n);
-    varsI := hashTable apply(gens ring I, i -> (last baseName i, i));
-    toZero := ideal apply(flatten (M/nonbases), i -> varsI#(sort elements i));
-    prune (I + toZero)
-)
 
 
 end
@@ -560,84 +555,3 @@ end
 ------------------------------------------------------------------------------------------------
 ---------------------------------------------< END >--------------------------------------------
 
-
-
-
-
-------------------------------------------------------------------------------------------------
---old stuff from flag Dressian paper
-------------------------------------------------------------------------------------------------
-
-restart
-load "Eur_ProjSpHF.m2"
-
-singleExchanges({2},4)
-
-
-time I = ideal singleExchanges({2,3},6);
-varsI = hashTable apply(gens ring I, i -> (last baseName i, i));
-#I_*
-J = I + ideal(varsI#{0,1,3},varsI#{0,2,4},varsI#{3,4,5},varsI#{1,2,5})
-J' = prune J
-#J'_*
-#(gens ring J')
-toString J'_*
-toString gens ring J'
-
-M2 = matroid completeGraph 4;
-M1 = uniformMatroid(2,6);
-I = dressianEqns({M1,M2})
-dim I
-I2 = sub(I,GF(2^3)[gens ring I])
-dim I2
-
-I = dressianEqns({uniformMatroid(2,6),uniformMatroid(3,6)})
-
-singleExchanges({2,3},6)
-
-
-I = ideal singleExchanges({1,2,3,4},5)
-time I = flagVariety({1,2,3,4},5);
-
-
-
-listToString = L -> (S := ""; apply(L, i -> S = concatenate(S|toString(i))); S)
-varList = R -> (
-    symbol p; symbol q;
-    r1 := #(last baseName first gens R);
-    apply(gens R, i -> (
-	    L := last baseName i;
-	    if #L == r1 then q_(listToString L) else p_(listToString L)
-	    )
-	)
-    )
-
-S = QQ[varList ring I];
-Ifinal = (map(S, ring I, gens S))I
-
-toString Ifinal
-toString gens ring Ifinal
-
-#(gens ring Ifinal)
-
-
-time I2 = flagVariety({2,3},6);
-#I2_*
-varsI2 = hashTable apply(gens ring I2, i -> (last baseName i, i));
-J2 = I2 + ideal(varsI2#{0,1,3},varsI2#{0,2,4},varsI2#{3,4,5},varsI2#{1,2,5})
-#J2_*
-J2' = prune J2
-dim J2'
-radical J2'
-#J2'_*
-
-#I_*
-#I2_*
-numcols mingens I
-
-
-I = Grassmannian(2,6)
-varsI = hashTable apply(gens ring I, i -> (last baseName i, i))
-J = I + ideal(varsI#(0,1,3),varsI#(0,2,4),varsI#(3,4,5),varsI#(1,2,5))
-J = sub(J,QQ[gens ring J])
-dim J
